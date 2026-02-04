@@ -1,0 +1,25 @@
+[package]
+name = "vive-file-viewer"
+version = "0.1.0"
+edition = "2024"
+description = "A fast terminal file viewer with fuzzy search and syntax highlighting"
+authors = ["noumi0k"]
+license = "MIT"
+repository = "https://github.com/noumi0k/vive-file-viewer"
+keywords = ["cli", "terminal", "file-viewer", "tui", "fuzzy-search"]
+categories = ["command-line-utilities"]
+readme = "README.md"
+
+[[bin]]
+name = "vfv"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = "0.28"
+crossterm = "0.28"
+syntect = "5"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+directories = "5"
+ignore = "0.4"
+nucleo-matcher = "0.3"

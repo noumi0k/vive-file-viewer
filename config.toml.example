@@ -1,0 +1,20 @@
+# vive-file-viewer Configuration
+# Copy this file to ~/.config/vive-file-viewer/config.toml
+
+# External editor command (terminal editors like vim/nvim are recommended)
+# Examples: "nvim", "vim", "nano", "code", "cursor"
+editor = "vim"
+
+# Additional arguments for the editor
+# Example for Cursor: editor_args = ["--wait"]
+editor_args = []
+
+# Show hidden files by default
+show_hidden = false
+
+# Maximum number of lines to load for preview
+preview_max_lines = 1000
+
+# Syntax highlighting theme
+# Available: "base16-ocean.dark", "base16-eighties.dark", "base16-mocha.dark", "InspiredGitHub", "Solarized (dark)", "Solarized (light)"
+theme = "base16-ocean.dark"
