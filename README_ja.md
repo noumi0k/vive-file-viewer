@@ -1,32 +1,34 @@
 # vfv (Vive File Viewer)
 
-ファジー検索とシンタックスハイライト機能を備えた高速ターミナルファイルビューワー。Rust製。
+**バイブコーディングのための超軽量ターミナルファイルビューワー**
+
+AIとペアプロしてる最中に、ちょっとファイルを確認したいだけ。複雑な設定も重い機能もいらない。開いて、検索して、見て、コーディングに戻る。それだけ。
 
 ![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-## 特徴
+## なぜ vfv？
 
-- Vim風キーバインドで高速ディレクトリ移動
-- コードプレビューのシンタックスハイライト
-- [nucleo](https://github.com/helix-editor/nucleo) による高速ファジー検索
-- .gitignore 対応の再帰検索
-- お好みのエディタで開く（vim, nvim, code など）
-- TOML で設定可能
+- **設定不要のファジー検索** - [nucleo](https://github.com/helix-editor/nucleo)（Helixエディタと同じ）内蔵。fzfの設定不要。
+- **4MBの単一バイナリ** - インストールして即実行。
+- **Vimキーバインド** - 慣れた操作感。
+- **シンタックスハイライト** - コードをカラーでプレビュー。
+- **.gitignore対応** - ripgrepのignoreクレート使用。
+
+### こんな人には向かない
+
+ファイル管理（コピー、移動、削除）、画像プレビュー、プラグインが必要なら [yazi](https://github.com/sxyazi/yazi) を使ってください。
 
 ## インストール
 
-### ソースから
-
 ```bash
+# ソースから
 git clone https://github.com/yourname/vive-file-viewer.git
 cd vive-file-viewer
 cargo install --path .
+
+# またはReleasesからバイナリをダウンロード
 ```
-
-### ビルド済みバイナリ
-
-[Releases](https://github.com/yourname/vive-file-viewer/releases) からダウンロードして PATH の通った場所に配置。
 
 ## 使い方
 
@@ -36,6 +38,8 @@ vfv ~/projects   # 指定ディレクトリを開く
 ```
 
 ## キーバインド
+
+`?` でヘルプ画面を表示できます。
 
 ### ファイルブラウザ
 
@@ -48,10 +52,15 @@ vfv ~/projects   # 指定ディレクトリを開く
 | `g` | 先頭へ |
 | `G` | 末尾へ |
 | `e` | エディタで開く |
+| `y` | パスをクリップボードにコピー |
+| `f` + 文字 | その文字で始まるエントリにジャンプ |
+| `;` | 次のマッチへジャンプ |
+| `,` | 前のマッチへジャンプ |
 | `/` | 全ファイル検索 |
 | `D` | フォルダのみ検索 |
 | `.` | 隠しファイル表示切替 |
 | `r` | リロード |
+| `?` | ヘルプ表示 |
 | `q` | 終了 |
 
 ### ファイルプレビュー
@@ -60,6 +69,10 @@ vfv ~/projects   # 指定ディレクトリを開く
 |-----|--------|
 | `j` / `↓` | 下にスクロール |
 | `k` / `↑` | 上にスクロール |
+| `Ctrl+d` | 半ページ下 |
+| `Ctrl+u` | 半ページ上 |
+| `Ctrl+f` / `PageDown` | 1ページ下 |
+| `Ctrl+b` / `PageUp` | 1ページ上 |
 | `g` | 先頭へ |
 | `G` | 末尾へ |
 | `e` | エディタで開く |
@@ -77,7 +90,7 @@ vfv ~/projects   # 指定ディレクトリを開く
 
 | キー | 動作 |
 |-----|--------|
-| `j` / `k` | 結果を選択 |
+| `j` / `k` / `Tab` | 結果を選択 |
 | `Enter` | 選択を開く |
 | `/` | 再検索 |
 | `Esc` | キャンセル |
@@ -106,13 +119,6 @@ preview_max_lines = 1000
 theme = "base16-ocean.dark"
 ```
 
-## 依存ライブラリ
-
-- [ratatui](https://github.com/ratatui-org/ratatui) - ターミナルUIフレームワーク
-- [syntect](https://github.com/trishume/syntect) - シンタックスハイライト
-- [nucleo](https://github.com/helix-editor/nucleo) - ファジーマッチング（Helixエディタで使用）
-- [ignore](https://github.com/BurntSushi/ripgrep/tree/master/crates/ignore) - .gitignore対応（ripgrepから）
-
 ## ライセンス
 
-MIT License - 詳細は [LICENSE](LICENSE) を参照。
+MIT

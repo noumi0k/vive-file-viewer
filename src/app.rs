@@ -14,6 +14,8 @@ pub enum InputMode {
     SearchInput,   // 検索文字入力中
     SearchResult,  // 検索結果選択中
     Preview,
+    JumpInput,     // fキー後の1文字待ち
+    Help,          // ヘルプ画面
 }
 
 pub struct App {
@@ -37,6 +39,8 @@ pub struct App {
     pub search_list_state: ListState,
     pub base_dir: PathBuf,
     pub search_dirs_only: bool,
+    // ジャンプ関連
+    pub last_jump_char: Option<char>,
 }
 
 impl App {
@@ -72,6 +76,7 @@ impl App {
             search_list_state,
             base_dir,
             search_dirs_only: false,
+            last_jump_char: None,
         };
 
         app.update_preview();
@@ -92,30 +97,39 @@ impl App {
     }
 
     pub fn move_up(&mut self) {
+        self.clear_jump();
         self.browser.move_up();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
     }
 
     pub fn move_down(&mut self) {
+        self.clear_jump();
         self.browser.move_down();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
     }
 
+    fn clear_jump(&mut self) {
+        self.last_jump_char = None;
+    }
+
     pub fn go_to_top(&mut self) {
+        self.clear_jump();
         self.browser.go_to_top();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
     }
 
     pub fn go_to_bottom(&mut self) {
+        self.clear_jump();
         self.browser.go_to_bottom();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
     }
 
     pub fn enter(&mut self) {
+        self.clear_jump();
         if let Some(entry) = self.browser.selected_entry() {
             if entry.is_dir {
                 if self.browser.enter_directory() {
@@ -134,6 +148,7 @@ impl App {
     }
 
     pub fn go_parent(&mut self) {
+        self.clear_jump();
         if self.browser.go_parent() {
             self.list_state.select(Some(self.browser.selected_index));
             self.update_preview();
@@ -141,12 +156,14 @@ impl App {
     }
 
     pub fn toggle_hidden(&mut self) {
+        self.clear_jump();
         self.browser.toggle_hidden();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
     }
 
     pub fn reload(&mut self) {
+        self.clear_jump();
         self.browser.refresh();
         self.list_state.select(Some(self.browser.selected_index));
         self.update_preview();
@@ -170,6 +187,7 @@ impl App {
     }
 
     pub fn start_search(&mut self, dirs_only: bool) {
+        self.clear_jump();
         self.input_mode = InputMode::SearchInput;
         self.search_input.clear();
         self.search_results.clear();
@@ -252,17 +270,27 @@ impl App {
     }
 
     pub fn search_move_up(&mut self) {
+        if self.search_results.is_empty() {
+            return;
+        }
         if self.search_selected > 0 {
             self.search_selected -= 1;
-            self.search_list_state.select(Some(self.search_selected));
+        } else {
+            self.search_selected = self.search_results.len() - 1;
         }
+        self.search_list_state.select(Some(self.search_selected));
     }
 
     pub fn search_move_down(&mut self) {
-        if self.search_selected < self.search_results.len().saturating_sub(1) {
-            self.search_selected += 1;
-            self.search_list_state.select(Some(self.search_selected));
+        if self.search_results.is_empty() {
+            return;
         }
+        if self.search_selected < self.search_results.len() - 1 {
+            self.search_selected += 1;
+        } else {
+            self.search_selected = 0;
+        }
+        self.search_list_state.select(Some(self.search_selected));
     }
 
     pub fn scroll_preview_up(&mut self, amount: usize) {
@@ -282,5 +310,122 @@ impl App {
 
     pub fn quit(&mut self) {
         self.should_quit = true;
+    }
+
+    pub fn copy_path(&mut self) {
+        if let Some(entry) = self.browser.selected_entry() {
+            let path_str = entry.path.to_string_lossy().to_string();
+
+            #[cfg(target_os = "macos")]
+            let result = std::process::Command::new("pbcopy")
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .and_then(|mut child| {
+                    use std::io::Write;
+                    if let Some(stdin) = child.stdin.as_mut() {
+                        stdin.write_all(path_str.as_bytes())?;
+                    }
+                    child.wait()
+                });
+
+            #[cfg(target_os = "linux")]
+            let result = std::process::Command::new("xclip")
+                .args(["-selection", "clipboard"])
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .and_then(|mut child| {
+                    use std::io::Write;
+                    if let Some(stdin) = child.stdin.as_mut() {
+                        stdin.write_all(path_str.as_bytes())?;
+                    }
+                    child.wait()
+                });
+
+            #[cfg(target_os = "windows")]
+            let result = std::process::Command::new("cmd")
+                .args(["/C", &format!("echo {} | clip", path_str)])
+                .spawn()
+                .and_then(|mut child| child.wait());
+
+            match result {
+                Ok(_) => {
+                    self.status_message = Some(format!("Copied: {}", path_str));
+                }
+                Err(e) => {
+                    self.status_message = Some(format!("Failed to copy: {}", e));
+                }
+            }
+        }
+    }
+
+    pub fn start_jump(&mut self) {
+        self.input_mode = InputMode::JumpInput;
+    }
+
+    pub fn execute_jump(&mut self, c: char) {
+        self.last_jump_char = Some(c);
+        self.jump_to_char(c, true);
+        self.input_mode = InputMode::Normal;
+    }
+
+    pub fn jump_next(&mut self) {
+        if let Some(c) = self.last_jump_char {
+            self.jump_to_char(c, true);
+        }
+    }
+
+    pub fn jump_prev(&mut self) {
+        if let Some(c) = self.last_jump_char {
+            self.jump_to_char(c, false);
+        }
+    }
+
+    fn jump_to_char(&mut self, c: char, forward: bool) {
+        let entries = &self.browser.entries;
+        if entries.is_empty() {
+            return;
+        }
+
+        let c_lower = c.to_lowercase().next().unwrap_or(c);
+        let current = self.browser.selected_index;
+        let len = entries.len();
+
+        if forward {
+            // 現在位置の次から検索、末尾まで行ったら先頭から
+            for i in 1..=len {
+                let idx = (current + i) % len;
+                if entries[idx].name.to_lowercase().starts_with(c_lower) {
+                    self.browser.selected_index = idx;
+                    self.list_state.select(Some(idx));
+                    self.update_preview();
+                    return;
+                }
+            }
+        } else {
+            // 現在位置の前から検索、先頭まで行ったら末尾から
+            for i in 1..=len {
+                let idx = (current + len - i) % len;
+                if entries[idx].name.to_lowercase().starts_with(c_lower) {
+                    self.browser.selected_index = idx;
+                    self.list_state.select(Some(idx));
+                    self.update_preview();
+                    return;
+                }
+            }
+        }
+
+        self.status_message = Some(format!("No match for '{}'", c));
+    }
+
+    pub fn cancel_jump(&mut self) {
+        self.input_mode = InputMode::Normal;
+    }
+
+    pub fn show_help(&mut self) {
+        self.input_mode = InputMode::Help;
+    }
+
+    pub fn close_help(&mut self) {
+        self.input_mode = InputMode::Normal;
     }
 }

@@ -43,7 +43,8 @@ fn draw_main(frame: &mut Frame, app: &mut App, area: Rect) {
         InputMode::Preview => draw_preview(frame, app, area),
         InputMode::SearchInput => draw_search_input(frame, app, area),
         InputMode::SearchResult => draw_search_results(frame, app, area),
-        InputMode::Normal => draw_file_list(frame, app, area),
+        InputMode::Help => draw_help(frame, area),
+        InputMode::Normal | InputMode::JumpInput => draw_file_list(frame, app, area),
     }
 }
 
@@ -130,7 +131,12 @@ fn draw_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
         })
         .collect();
 
-    let title = "Files".to_string();
+    let total = app.browser.entries.len();
+    let title = if total > 0 {
+        format!("Files [{}/{}]", app.browser.selected_index + 1, total)
+    } else {
+        "Files [empty]".to_string()
+    };
 
     let list = List::new(items)
         .block(
@@ -150,22 +156,34 @@ fn draw_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
 }
 
 fn draw_preview(frame: &mut Frame, app: &mut App, area: Rect) {
-    let title = app
+    let file_name = app
         .browser
         .selected_entry()
         .map(|e| e.name.clone())
         .unwrap_or_else(|| "Preview".to_string());
+
+    // 一時的にinner_areaを計算するためのブロック
+    let temp_block = Block::default().borders(Borders::ALL);
+    let inner_area = temp_block.inner(area);
+    let visible_height = inner_area.height as usize;
+    app.set_preview_height(visible_height);
+
+    // タイトルに位置情報を追加
+    let title = if let Some(ref content) = app.preview_content {
+        let total = content.lines.len();
+        let current_line = app.preview_scroll + 1;
+        let end_line = (app.preview_scroll + visible_height).min(total);
+        format!("{} [{}-{}/{}]", file_name, current_line, end_line, total)
+    } else {
+        file_name
+    };
 
     let block = Block::default()
         .borders(Borders::ALL)
         .title(title)
         .border_style(Style::default().fg(Color::Cyan));
 
-    let inner_area = block.inner(area);
     frame.render_widget(block, area);
-
-    let visible_height = inner_area.height as usize;
-    app.set_preview_height(visible_height);
 
     if let Some(ref content) = app.preview_content {
         let start = app.preview_scroll;
@@ -199,6 +217,56 @@ fn draw_preview(frame: &mut Frame, app: &mut App, area: Rect) {
     }
 }
 
+fn draw_help(frame: &mut Frame, area: Rect) {
+    let help_text = vec![
+        "",
+        "  vfv - Vive File Viewer",
+        "",
+        "  === File Browser ===",
+        "  j/k, ↑/↓     Move up/down",
+        "  Enter, l     Open file / Enter directory",
+        "  h, Backspace Go to parent directory",
+        "  g/G          Go to top/bottom",
+        "  e            Open in editor",
+        "  y            Copy path to clipboard",
+        "  f + char     Jump to entry starting with char",
+        "  ;            Jump to next match",
+        "  ,            Jump to previous match",
+        "  /            Search all files (fuzzy)",
+        "  D            Search folders only",
+        "  .            Toggle hidden files",
+        "  r            Reload",
+        "  ?            Show this help",
+        "  q            Quit",
+        "",
+        "  === Preview ===",
+        "  j/k          Scroll up/down",
+        "  Ctrl+d/u     Half page down/up",
+        "  Ctrl+f/b     Page down/up",
+        "  g/G          Go to top/bottom",
+        "  e            Open in editor",
+        "  h/q          Back to browser",
+        "",
+        "  Press q or ? to close",
+    ];
+
+    let lines: Vec<Line> = help_text
+        .iter()
+        .map(|&s| Line::from(s))
+        .collect();
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title("Help")
+        .border_style(Style::default().fg(Color::Green));
+
+    let paragraph = Paragraph::new(lines)
+        .block(block)
+        .style(Style::default().fg(Color::White));
+
+    frame.render_widget(paragraph, area);
+}
+
 fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let content = match app.input_mode {
         InputMode::SearchInput => {
@@ -207,25 +275,37 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
         InputMode::SearchResult => {
             "j/k:select  Enter:open  /:re-search  Esc:cancel".to_string()
         }
+        InputMode::JumpInput => {
+            "Type a character to jump...".to_string()
+        }
         InputMode::Normal => {
             if let Some(ref msg) = app.status_message {
                 msg.clone()
             } else {
                 let is_file = app.browser.selected_entry().map(|e| !e.is_dir).unwrap_or(false);
-                if is_file {
-                    "q:quit  j/k:move  Enter:open  h:back  e:editor  /:search  D:folders  r:reload".to_string()
+                let jump_hint = if let Some(c) = app.last_jump_char {
+                    format!("  ;/,:next/prev '{}'", c)
                 } else {
-                    "q:quit  j/k:move  Enter:open  h:back  /:search  D:folders  r:reload".to_string()
+                    String::new()
+                };
+                if is_file {
+                    format!("q:quit  j/k:move  f:jump{}  Enter:open  e:editor  /:search", jump_hint)
+                } else {
+                    format!("q:quit  j/k:move  f:jump{}  Enter:open  /:search", jump_hint)
                 }
             }
         }
         InputMode::Preview => {
             "j/k:scroll  g/G:top/bottom  e:editor  h/q:back".to_string()
         }
+        InputMode::Help => {
+            "Press q or ? to close".to_string()
+        }
     };
 
     let style = match app.input_mode {
         InputMode::SearchInput | InputMode::SearchResult => Style::default().fg(Color::Yellow),
+        InputMode::JumpInput | InputMode::Help => Style::default().fg(Color::Green),
         InputMode::Preview => Style::default().fg(Color::Cyan),
         InputMode::Normal => Style::default().fg(Color::DarkGray),
     };

@@ -98,10 +98,42 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App)
                         KeyCode::Char('r') => {
                             app.reload();
                         }
+                        KeyCode::Char('y') => {
+                            app.copy_path();
+                        }
+                        KeyCode::Char('f') => {
+                            app.start_jump();
+                        }
+                        KeyCode::Char(';') => {
+                            app.jump_next();
+                        }
+                        KeyCode::Char(',') => {
+                            app.jump_prev();
+                        }
+                        KeyCode::Char('?') => {
+                            app.show_help();
+                        }
                         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                             app.quit();
                         }
                         _ => {}
+                    },
+                    InputMode::Help => match key.code {
+                        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('?') => {
+                            app.close_help();
+                        }
+                        _ => {}
+                    },
+                    InputMode::JumpInput => match key.code {
+                        KeyCode::Char(c) => {
+                            app.execute_jump(c);
+                        }
+                        KeyCode::Esc => {
+                            app.cancel_jump();
+                        }
+                        _ => {
+                            app.cancel_jump();
+                        }
                     },
                     InputMode::Preview => match key.code {
                         KeyCode::Char('q') | KeyCode::Esc | KeyCode::Char('h') | KeyCode::Left => {

@@ -70,14 +70,24 @@ impl FileBrowser {
     }
 
     pub fn move_up(&mut self) {
+        if self.entries.is_empty() {
+            return;
+        }
         if self.selected_index > 0 {
             self.selected_index -= 1;
+        } else {
+            self.selected_index = self.entries.len() - 1;
         }
     }
 
     pub fn move_down(&mut self) {
-        if self.selected_index < self.entries.len().saturating_sub(1) {
+        if self.entries.is_empty() {
+            return;
+        }
+        if self.selected_index < self.entries.len() - 1 {
             self.selected_index += 1;
+        } else {
+            self.selected_index = 0;
         }
     }
 
