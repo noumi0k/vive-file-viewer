@@ -71,9 +71,10 @@ impl FileSearcher {
                 continue;
             }
 
-            // ファイル名に対してファジーマッチング
+            // クエリに/が含まれていればパス全体、なければファイル名のみでマッチ
+            let target = if query.contains('/') { &display_path } else { &file_name };
             let mut buf = Vec::new();
-            let haystack = Utf32Str::new(&file_name, &mut buf);
+            let haystack = Utf32Str::new(target, &mut buf);
 
             if let Some(score) = pattern.score(haystack, &mut self.matcher) {
                 results.push(SearchResult {
