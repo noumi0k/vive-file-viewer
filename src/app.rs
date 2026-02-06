@@ -211,20 +211,47 @@ impl App {
     }
 
     /// 検索入力をパースしてクエリとオプションを分離
-    fn parse_search_input(&self) -> (String, bool, bool) {
+    /// 戻り値: (query, dirs_only, exact, base_path)
+    fn parse_search_input(&self) -> (String, bool, bool, Option<PathBuf>) {
         let mut query_parts: Vec<&str> = Vec::new();
         let mut exact = false;
         let mut dirs_only = self.search_dirs_only; // Dキーで開始した場合のデフォルト
+        let mut base_path: Option<PathBuf> = None;
 
-        for part in self.search_input.split_whitespace() {
-            match part {
+        let parts: Vec<&str> = self.search_input.split_whitespace().collect();
+        let mut i = 0;
+        while i < parts.len() {
+            match parts[i] {
                 "-e" | "--exact" => exact = true,
                 "-d" | "--dir" => dirs_only = true,
-                _ => query_parts.push(part),
+                "-b" | "--base" => {
+                    if i + 1 < parts.len() {
+                        i += 1;
+                        let path_str = parts[i];
+                        let expanded = if path_str.starts_with("~/") {
+                            if let Ok(home) = std::env::var("HOME") {
+                                PathBuf::from(home).join(&path_str[2..])
+                            } else {
+                                PathBuf::from(path_str)
+                            }
+                        } else if path_str == "~" {
+                            if let Ok(home) = std::env::var("HOME") {
+                                PathBuf::from(home)
+                            } else {
+                                PathBuf::from(path_str)
+                            }
+                        } else {
+                            PathBuf::from(path_str)
+                        };
+                        base_path = Some(expanded);
+                    }
+                }
+                _ => query_parts.push(parts[i]),
             }
+            i += 1;
         }
 
-        (query_parts.join(" "), dirs_only, exact)
+        (query_parts.join(" "), dirs_only, exact, base_path)
     }
 
     /// 検索を実行（Enter で確定時）- バックグラウンドで実行開始
@@ -235,7 +262,7 @@ impl App {
         }
 
         // 検索入力をパース
-        let (query, dirs_only, exact) = self.parse_search_input();
+        let (query, dirs_only, exact, base_path) = self.parse_search_input();
 
         if query.is_empty() {
             self.cancel_search();
@@ -244,7 +271,7 @@ impl App {
 
         // 検索をバックグラウンドスレッドで実行
         let (tx, rx): (Sender<Vec<SearchResult>>, Receiver<Vec<SearchResult>>) = mpsc::channel();
-        let base_dir = self.base_dir.clone();
+        let base_dir = base_path.unwrap_or_else(|| self.browser.current_dir.clone());
 
         thread::spawn(move || {
             let mut searcher = FileSearcher::new();

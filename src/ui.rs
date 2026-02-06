@@ -81,6 +81,10 @@ fn draw_search_input(frame: &mut Frame, app: &App, area: Rect) {
             Span::styled("    -e, --exact  ", Style::default().fg(Color::Yellow)),
             Span::styled("Exact match (no fuzzy)", Style::default().fg(Color::DarkGray)),
         ]),
+        Line::from(vec![
+            Span::styled("    -b, --base   ", Style::default().fg(Color::Yellow)),
+            Span::styled("Search base directory", Style::default().fg(Color::DarkGray)),
+        ]),
         Line::from(""),
         Line::from(vec![
             Span::styled("  Examples:", Style::default().fg(Color::White)),
@@ -96,6 +100,10 @@ fn draw_search_input(frame: &mut Frame, app: &App, area: Rect) {
         Line::from(vec![
             Span::styled("    config -e    ", Style::default().fg(Color::Cyan)),
             Span::styled("Exact match for 'config'", Style::default().fg(Color::DarkGray)),
+        ]),
+        Line::from(vec![
+            Span::styled("    main -b ~/dev", Style::default().fg(Color::Cyan)),
+            Span::styled("Search 'main' under ~/dev", Style::default().fg(Color::DarkGray)),
         ]),
     ];
 
