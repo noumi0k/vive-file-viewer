@@ -2,7 +2,7 @@
 
 **バイブコーディングのための超軽量ターミナルファイルビューワー**
 
-AIとペアプロしてる最中に、ちょっとファイルを確認したいだけ。複雑な設定も重い機能もいらない。開いて、検索して、見て、コーディングに戻る。それだけ。
+バイブコーディングをしてる最中に、ちょっとファイルを確認したいだけ。複雑な設定も重い機能もいらない。開いて、検索して、見て、コーディングに戻る。それだけ。
 
 [![CI](https://github.com/noumi0k/vive-file-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/noumi0k/vive-file-viewer/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/vfv)](https://crates.io/crates/vfv)
@@ -41,69 +41,54 @@ cargo install --path .
 ```
 </details>
 
+## セットアップ
+
+セットアップコマンドで全て自動設定：
+
+```bash
+vfv init
+```
+
+以下を自動で行います：
+- 設定ファイル作成
+- シェル補完インストール（zsh/bash/fish）
+- manページインストール
+- シェルのrcファイル更新
+
+対応シェル：**zsh**、**bash**、**fish**
+
+既存ファイルを上書きするには `--force` を使用。
+
+### 設定ファイル
+
+場所：
+- **macOS**: `~/Library/Application Support/vive-file-viewer/config.toml`
+- **Linux**: `~/.config/vive-file-viewer/config.toml`
+- **Windows**: `%APPDATA%\vive-file-viewer\config.toml`
+
+```toml
+# エディタコマンド
+editor = "vim"
+editor_args = []
+
+# デフォルトで隠しファイルを表示
+show_hidden = false
+
+# プレビューの最大行数
+preview_max_lines = 1000
+
+# シンタックスハイライトのテーマ
+# 選択肢: "base16-ocean.dark", "base16-eighties.dark",
+#         "base16-mocha.dark", "Solarized (dark)", "Solarized (light)"
+theme = "base16-ocean.dark"
+```
+
 ## 使い方
 
 ```bash
 vfv              # カレントディレクトリを開く（TUI）
 vfv ~/projects   # 指定ディレクトリを開く（TUI）
 ```
-
-## CLI検索
-
-コマンドラインから直接ファイル検索。AIアシスタントやシェルスクリプトから呼び出す想定。
-
-```bash
-vfv find <query> [path]    # ファジー検索
-```
-
-### オプション
-
-| オプション | 説明 |
-|-----------|------|
-| `-d, --dir` | ディレクトリのみ検索 |
-| `-e, --exact` | 完全一致（ファジーなし） |
-| `-n, --limit <N>` | 最大件数（デフォルト: 20） |
-| `-1, --first` | 最上位1件のみ出力 |
-| `-j, --json` | JSON形式で出力 |
-| `-c, --compact` | コンパクトJSON（1行） |
-| `-t, --timeout <秒>` | タイムアウト秒数（デフォルト: 0 = 無制限） |
-| `-q, --quiet` | スピナー非表示（スクリプト/AI用） |
-
-### パスマッチ
-
-クエリに`/`を含む場合、パス全体でマッチ：
-
-```bash
-vfv find "src/main" ~/dev    # src/*/main* にマッチ
-vfv find "main" ~/dev        # ファイル名のみでマッチ
-```
-
-### 使用例
-
-```bash
-# 基本検索
-vfv find "config" ~/dev
-
-# ディレクトリを検索してcd
-cd $(vfv find "project" ~/dev -d -1 -q)
-
-# パス検索: どこかの dev ディレクトリ配下の telemo
-vfv find "dev/telemo" ~ -d
-
-# 完全一致
-vfv find "config" ~/dev -e
-
-# AI向け: quiet、コンパクトJSON、タイムアウト付き
-vfv find "main" ~/dev -q -j -c -t 5
-```
-
-### 終了コード
-
-| コード | 意味 |
-|-------|------|
-| 0 | 結果あり |
-| 1 | 結果なし |
-| 124 | タイムアウト |
 
 ## キーバインド
 
@@ -172,29 +157,62 @@ main -b ~/dev     # 指定ディレクトリを起点に検索
 | `/` | 再検索 |
 | `Esc` | キャンセル |
 
-## 設定
+## CLI検索
 
-設定ファイルの場所：
-- **macOS**: `~/Library/Application Support/vive-file-viewer/config.toml`
-- **Linux**: `~/.config/vive-file-viewer/config.toml`
-- **Windows**: `%APPDATA%\vive-file-viewer\config.toml`
+コマンドラインから直接ファイル検索。AIアシスタントやシェルスクリプトから呼び出す想定。
 
-```toml
-# エディタコマンド
-editor = "vim"
-editor_args = []
-
-# デフォルトで隠しファイルを表示
-show_hidden = false
-
-# プレビューの最大行数
-preview_max_lines = 1000
-
-# シンタックスハイライトのテーマ
-# 選択肢: "base16-ocean.dark", "base16-eighties.dark",
-#         "base16-mocha.dark", "Solarized (dark)", "Solarized (light)"
-theme = "base16-ocean.dark"
+```bash
+vfv find <query> [path]    # ファジー検索
 ```
+
+### オプション
+
+| オプション | 説明 |
+|-----------|------|
+| `-d, --dir` | ディレクトリのみ検索 |
+| `-e, --exact` | 完全一致（ファジーなし） |
+| `-n, --limit <N>` | 最大件数（デフォルト: 20） |
+| `-1, --first` | 最上位1件のみ出力 |
+| `-j, --json` | JSON形式で出力 |
+| `-c, --compact` | コンパクトJSON（1行） |
+| `-t, --timeout <秒>` | タイムアウト秒数（デフォルト: 0 = 無制限） |
+| `-q, --quiet` | スピナー非表示（スクリプト/AI用） |
+
+### パスマッチ
+
+クエリに`/`を含む場合、パス全体でマッチ：
+
+```bash
+vfv find "src/main" ~/dev    # src/*/main* にマッチ
+vfv find "main" ~/dev        # ファイル名のみでマッチ
+```
+
+### 使用例
+
+```bash
+# 基本検索
+vfv find "config" ~/dev
+
+# ディレクトリを検索してcd
+cd $(vfv find "project" ~/dev -d -1 -q)
+
+# パス検索: どこかの dev ディレクトリ配下の telemo
+vfv find "dev/telemo" ~ -d
+
+# 完全一致
+vfv find "config" ~/dev -e
+
+# AI向け: quiet、コンパクトJSON、タイムアウト付き
+vfv find "main" ~/dev -q -j -c -t 5
+```
+
+### 終了コード
+
+| コード | 意味 |
+|-------|------|
+| 0 | 結果あり |
+| 1 | 結果なし |
+| 124 | タイムアウト |
 
 ## ライセンス
 

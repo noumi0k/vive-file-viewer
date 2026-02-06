@@ -43,69 +43,54 @@ cargo install --path .
 ```
 </details>
 
+## Setup
+
+Run the setup command to configure everything automatically:
+
+```bash
+vfv init
+```
+
+This will:
+- Create config file
+- Install shell completions (zsh/bash/fish)
+- Install man page
+- Update your shell rc file
+
+Supported shells: **zsh**, **bash**, **fish**
+
+Use `--force` to overwrite existing files.
+
+### Config File
+
+Location:
+- **macOS**: `~/Library/Application Support/vive-file-viewer/config.toml`
+- **Linux**: `~/.config/vive-file-viewer/config.toml`
+- **Windows**: `%APPDATA%\vive-file-viewer\config.toml`
+
+```toml
+# Editor command
+editor = "vim"
+editor_args = []
+
+# Show hidden files by default
+show_hidden = false
+
+# Maximum lines to preview
+preview_max_lines = 1000
+
+# Syntax highlighting theme
+# Options: "base16-ocean.dark", "base16-eighties.dark",
+#          "base16-mocha.dark", "Solarized (dark)", "Solarized (light)"
+theme = "base16-ocean.dark"
+```
+
 ## Usage
 
 ```bash
 vfv              # Browse current directory (TUI)
 vfv ~/projects   # Browse specific directory (TUI)
 ```
-
-## CLI Search
-
-Search files directly from the command line. Designed to be called from AI assistants or shell scripts.
-
-```bash
-vfv find <query> [path]    # Fuzzy search files/directories
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `-d, --dir` | Search directories only |
-| `-e, --exact` | Exact match (no fuzzy) |
-| `-n, --limit <N>` | Maximum results (default: 20) |
-| `-1, --first` | Output only the top result |
-| `-j, --json` | Output as JSON |
-| `-c, --compact` | Compact JSON (single line) |
-| `-t, --timeout <SEC>` | Timeout in seconds (default: 0 = no limit) |
-| `-q, --quiet` | No spinner (for scripts/AI) |
-
-### Path Matching
-
-When query contains `/`, it matches against the full path:
-
-```bash
-vfv find "src/main" ~/dev    # Matches paths containing "src/*/main*"
-vfv find "main" ~/dev        # Matches filename only
-```
-
-### Examples
-
-```bash
-# Basic search
-vfv find "config" ~/dev
-
-# Find a directory and cd into it
-cd $(vfv find "project" ~/dev -d -1 -q)
-
-# Path search: find "telemo" under any "dev" directory
-vfv find "dev/telemo" ~ -d
-
-# Exact match
-vfv find "config" ~/dev -e
-
-# AI-friendly: quiet, compact JSON, with timeout
-vfv find "main" ~/dev -q -j -c -t 5
-```
-
-### Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | Results found |
-| 1 | No results |
-| 124 | Timeout |
 
 ## Keybindings
 
@@ -174,29 +159,62 @@ main -b ~/dev     # Search from specific base directory
 | `/` | New search |
 | `Esc` | Cancel |
 
-## Configuration
+## CLI Search
 
-Config file location:
-- **macOS**: `~/Library/Application Support/vive-file-viewer/config.toml`
-- **Linux**: `~/.config/vive-file-viewer/config.toml`
-- **Windows**: `%APPDATA%\vive-file-viewer\config.toml`
+Search files directly from the command line. Designed to be called from AI assistants or shell scripts.
 
-```toml
-# Editor command
-editor = "vim"
-editor_args = []
-
-# Show hidden files by default
-show_hidden = false
-
-# Maximum lines to preview
-preview_max_lines = 1000
-
-# Syntax highlighting theme
-# Options: "base16-ocean.dark", "base16-eighties.dark",
-#          "base16-mocha.dark", "Solarized (dark)", "Solarized (light)"
-theme = "base16-ocean.dark"
+```bash
+vfv find <query> [path]    # Fuzzy search files/directories
 ```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-d, --dir` | Search directories only |
+| `-e, --exact` | Exact match (no fuzzy) |
+| `-n, --limit <N>` | Maximum results (default: 20) |
+| `-1, --first` | Output only the top result |
+| `-j, --json` | Output as JSON |
+| `-c, --compact` | Compact JSON (single line) |
+| `-t, --timeout <SEC>` | Timeout in seconds (default: 0 = no limit) |
+| `-q, --quiet` | No spinner (for scripts/AI) |
+
+### Path Matching
+
+When query contains `/`, it matches against the full path:
+
+```bash
+vfv find "src/main" ~/dev    # Matches paths containing "src/*/main*"
+vfv find "main" ~/dev        # Matches filename only
+```
+
+### Examples
+
+```bash
+# Basic search
+vfv find "config" ~/dev
+
+# Find a directory and cd into it
+cd $(vfv find "project" ~/dev -d -1 -q)
+
+# Path search: find "telemo" under any "dev" directory
+vfv find "dev/telemo" ~ -d
+
+# Exact match
+vfv find "config" ~/dev -e
+
+# AI-friendly: quiet, compact JSON, with timeout
+vfv find "main" ~/dev -q -j -c -t 5
+```
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Results found |
+| 1 | No results |
+| 124 | Timeout |
 
 ## License
 
