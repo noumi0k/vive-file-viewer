@@ -1,5 +1,5 @@
-use std::process::Command;
 use std::fs::{self, File};
+use std::process::Command;
 use tempfile::TempDir;
 
 fn vfv_binary() -> Command {
@@ -56,7 +56,13 @@ fn test_find_compact_json() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "main", temp_dir.path().to_str().unwrap(), "--json", "--compact"])
+        .args([
+            "find",
+            "main",
+            temp_dir.path().to_str().unwrap(),
+            "--json",
+            "--compact",
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -64,7 +70,11 @@ fn test_find_compact_json() {
     let stdout = String::from_utf8_lossy(&output.stdout);
 
     // Compact JSON should be on a single line
-    assert_eq!(stdout.lines().count(), 1, "Compact JSON should be single line");
+    assert_eq!(
+        stdout.lines().count(),
+        1,
+        "Compact JSON should be single line"
+    );
 }
 
 #[test]
@@ -72,7 +82,11 @@ fn test_find_no_results_exits_with_code_1() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "nonexistent_file_xyz", temp_dir.path().to_str().unwrap()])
+        .args([
+            "find",
+            "nonexistent_file_xyz",
+            temp_dir.path().to_str().unwrap(),
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -85,7 +99,13 @@ fn test_find_dir_only() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "src", temp_dir.path().to_str().unwrap(), "--dir", "--json"])
+        .args([
+            "find",
+            "src",
+            temp_dir.path().to_str().unwrap(),
+            "--dir",
+            "--json",
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -104,7 +124,14 @@ fn test_find_limit() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "r", temp_dir.path().to_str().unwrap(), "--json", "--limit", "1"])
+        .args([
+            "find",
+            "r",
+            temp_dir.path().to_str().unwrap(),
+            "--json",
+            "--limit",
+            "1",
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -120,7 +147,13 @@ fn test_find_first_flag() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "r", temp_dir.path().to_str().unwrap(), "--json", "-1"])
+        .args([
+            "find",
+            "r",
+            temp_dir.path().to_str().unwrap(),
+            "--json",
+            "-1",
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -136,7 +169,13 @@ fn test_find_exact_match() {
     let temp_dir = setup_test_dir();
 
     let output = vfv_binary()
-        .args(["find", "main.rs", temp_dir.path().to_str().unwrap(), "--exact", "--json"])
+        .args([
+            "find",
+            "main.rs",
+            temp_dir.path().to_str().unwrap(),
+            "--exact",
+            "--json",
+        ])
         .output()
         .expect("Failed to execute command");
 
@@ -173,7 +212,13 @@ fn test_find_timeout() {
 
     // Very short timeout
     let output = vfv_binary()
-        .args(["find", "x", temp_dir.path().to_str().unwrap(), "--timeout", "0"])
+        .args([
+            "find",
+            "x",
+            temp_dir.path().to_str().unwrap(),
+            "--timeout",
+            "0",
+        ])
         .output()
         .expect("Failed to execute command");
 

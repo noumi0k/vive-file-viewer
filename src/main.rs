@@ -535,7 +535,10 @@ theme = "base16-ocean.dark"
         std::fs::write(&config_path, default_config)?;
         println!("Created: {}", config_path.display());
     } else {
-        println!("Exists:  {} (use --force to overwrite)", config_path.display());
+        println!(
+            "Exists:  {} (use --force to overwrite)",
+            config_path.display()
+        );
     }
 
     // 2. Man page (all shells)
@@ -546,7 +549,8 @@ theme = "base16-ocean.dark"
         let cmd = Cli::command();
         let man = clap_mangen::Man::new(cmd);
         let mut buffer = Vec::new();
-        man.render(&mut buffer).expect("Failed to generate man page");
+        man.render(&mut buffer)
+            .expect("Failed to generate man page");
         std::fs::write(&man_path, buffer)?;
         println!("Created: {}", man_path.display());
     } else {
@@ -562,7 +566,9 @@ theme = "base16-ocean.dark"
             println!();
             println!("Shell '{}' is not supported for auto-setup.", shell);
             println!("Manual setup:");
-            println!("  - Completions: Copy from https://github.com/noumi0k/vive-file-viewer/tree/main/completions");
+            println!(
+                "  - Completions: Copy from https://github.com/noumi0k/vive-file-viewer/tree/main/completions"
+            );
             println!("  - Man page: Add to MANPATH: $HOME/.local/share/man");
         }
     }
@@ -581,7 +587,10 @@ fn setup_zsh(home: &str, force: bool) -> io::Result<()> {
         std::fs::write(&completion_path, completion_script)?;
         println!("Created: {}", completion_path.display());
     } else {
-        println!("Exists:  {} (use --force to overwrite)", completion_path.display());
+        println!(
+            "Exists:  {} (use --force to overwrite)",
+            completion_path.display()
+        );
     }
 
     // Update .zshrc
@@ -646,7 +655,10 @@ fn setup_bash(home: &str, force: bool) -> io::Result<()> {
         std::fs::write(&completion_path, completion_script)?;
         println!("Created: {}", completion_path.display());
     } else {
-        println!("Exists:  {} (use --force to overwrite)", completion_path.display());
+        println!(
+            "Exists:  {} (use --force to overwrite)",
+            completion_path.display()
+        );
     }
 
     // Update .bashrc
@@ -696,7 +708,10 @@ fn setup_fish(home: &str, force: bool) -> io::Result<()> {
         std::fs::write(&completion_path, completion_script)?;
         println!("Created: {}", completion_path.display());
     } else {
-        println!("Exists:  {} (use --force to overwrite)", completion_path.display());
+        println!(
+            "Exists:  {} (use --force to overwrite)",
+            completion_path.display()
+        );
     }
 
     // Update config.fish for MANPATH
@@ -720,7 +735,10 @@ fn setup_fish(home: &str, force: bool) -> io::Result<()> {
         std::fs::write(&config_fish_path, new_content)?;
         println!("Updated: {}", config_fish_path.display());
     } else {
-        println!("OK:      {} (already configured)", config_fish_path.display());
+        println!(
+            "OK:      {} (already configured)",
+            config_fish_path.display()
+        );
     }
 
     println!();
@@ -734,6 +752,7 @@ fn run_man_page() {
     let cmd = Cli::command();
     let man = clap_mangen::Man::new(cmd);
     let mut buffer = Vec::new();
-    man.render(&mut buffer).expect("Failed to generate man page");
+    man.render(&mut buffer)
+        .expect("Failed to generate man page");
     io::Write::write_all(&mut io::stdout(), &buffer).expect("Failed to write man page");
 }

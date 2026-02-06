@@ -160,10 +160,12 @@ mod tests {
         let content = previewer.preview(temp_dir.path());
 
         assert_eq!(content.lines.len(), 1);
-        assert!(content.lines[0]
-            .segments
-            .iter()
-            .any(|(_, text)| text.contains("[Directory]")));
+        assert!(
+            content.lines[0]
+                .segments
+                .iter()
+                .any(|(_, text)| text.contains("[Directory]"))
+        );
     }
 
     #[test]
@@ -175,10 +177,12 @@ mod tests {
 
         assert_eq!(content.lines.len(), 1);
         // Non-file path returns [Directory] message
-        assert!(content.lines[0]
-            .segments
-            .iter()
-            .any(|(_, text)| text.contains("[Directory]")));
+        assert!(
+            content.lines[0]
+                .segments
+                .iter()
+                .any(|(_, text)| text.contains("[Directory]"))
+        );
     }
 
     #[test]
@@ -218,17 +222,21 @@ mod tests {
         let file_path = temp_dir.path().join("binary.bin");
         let mut file = File::create(&file_path).unwrap();
         // Write binary content with lots of null bytes
-        let binary_content: Vec<u8> = (0..1000).map(|i| if i % 5 == 0 { 0 } else { i as u8 }).collect();
+        let binary_content: Vec<u8> = (0..1000)
+            .map(|i| if i % 5 == 0 { 0 } else { i as u8 })
+            .collect();
         file.write_all(&binary_content).unwrap();
 
         let previewer = Previewer::new("base16-ocean.dark", 100);
         let content = previewer.preview(&file_path);
 
         assert_eq!(content.lines.len(), 1);
-        assert!(content.lines[0]
-            .segments
-            .iter()
-            .any(|(_, text)| text.contains("[Binary file]")));
+        assert!(
+            content.lines[0]
+                .segments
+                .iter()
+                .any(|(_, text)| text.contains("[Binary file]"))
+        );
     }
 
     #[test]

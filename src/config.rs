@@ -267,7 +267,11 @@ mod tests {
             // validate_editor returns Ok but prints warnings
             // We just verify it doesn't panic
             let result = config.validate_editor();
-            assert!(result.is_ok(), "validate_editor should not fail for: {}", editor);
+            assert!(
+                result.is_ok(),
+                "validate_editor should not fail for: {}",
+                editor
+            );
         }
     }
 
