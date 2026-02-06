@@ -10,6 +10,8 @@ When you're in the flow with AI pair programming, you just want to quickly brows
 ![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+https://github.com/user-attachments/assets/e3ec4515-ac0d-453f-851f-ca449b19e877
+
 ## Why vfv?
 
 - **Zero config fuzzy search** - Built-in [nucleo](https://github.com/helix-editor/nucleo) (same as Helix editor). No fzf setup needed.
