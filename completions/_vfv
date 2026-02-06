@@ -1,0 +1,61 @@
+#compdef vfv
+
+_vfv() {
+    local -a commands
+    commands=(
+        'find:Fuzzy search files and directories'
+        'init:Initialize configuration file'
+        'man:Generate man page'
+    )
+
+    local -a find_options
+    find_options=(
+        '-j[Output as JSON]'
+        '--json[Output as JSON]'
+        '-d[Search directories only]'
+        '--dir[Search directories only]'
+        '-n[Maximum number of results]:limit:'
+        '--limit[Maximum number of results]:limit:'
+        '-1[Output only the top result]'
+        '--first[Output only the top result]'
+        '-t[Timeout in seconds]:timeout:'
+        '--timeout[Timeout in seconds]:timeout:'
+        '-q[Quiet mode]'
+        '--quiet[Quiet mode]'
+        '-c[Compact JSON output]'
+        '--compact[Compact JSON output]'
+        '-e[Exact match]'
+        '--exact[Exact match]'
+        '-h[Print help]'
+        '--help[Print help]'
+    )
+
+    _arguments -C \
+        '1:command:->command' \
+        '*::arg:->args'
+
+    case "$state" in
+        command)
+            _describe 'command' commands
+            ;;
+        args)
+            case "$words[1]" in
+                find)
+                    _arguments -s \
+                        "${find_options[@]}" \
+                        ':query:' \
+                        '::path:_files -/'
+                    ;;
+                init)
+                    _arguments \
+                        '-f[Overwrite existing config]' \
+                        '--force[Overwrite existing config]'
+                    ;;
+                man)
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_vfv "$@"
