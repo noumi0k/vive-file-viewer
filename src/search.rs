@@ -4,6 +4,11 @@ use ignore::WalkBuilder;
 use nucleo_matcher::pattern::{AtomKind, CaseMatching, Normalization, Pattern};
 use nucleo_matcher::{Config, Matcher, Utf32Str};
 
+/// Maximum directory depth for file search
+const MAX_SEARCH_DEPTH: usize = 10;
+/// Score assigned to exact matches
+const EXACT_MATCH_SCORE: u32 = 1000;
+
 #[derive(Debug, Clone)]
 pub struct SearchResult {
     pub path: PathBuf,
@@ -65,7 +70,7 @@ impl FileSearcher {
             .git_ignore(true)
             .git_global(true)
             .git_exclude(true)
-            .max_depth(Some(10))
+            .max_depth(Some(MAX_SEARCH_DEPTH))
             .build();
 
         for entry in walker.flatten() {
@@ -112,7 +117,7 @@ impl FileSearcher {
                     results.push(SearchResult {
                         path: path.to_path_buf(),
                         display_path,
-                        score: 1000, // 完全一致は固定スコア
+                        score: EXACT_MATCH_SCORE,
                         is_dir,
                     });
                 }
@@ -243,5 +248,64 @@ mod tests {
         for i in 1..results.len() {
             assert!(results[i - 1].score >= results[i].score);
         }
+    }
+
+    #[test]
+    fn test_exact_match_uses_constant_score() {
+        let temp_dir = setup_test_dir();
+        let mut searcher = FileSearcher::new();
+        let results = searcher.search(temp_dir.path(), "main.rs", 10, false, true);
+        assert!(!results.is_empty());
+        // All exact matches should have EXACT_MATCH_SCORE
+        for result in &results {
+            assert_eq!(result.score, EXACT_MATCH_SCORE);
+        }
+    }
+
+    #[test]
+    fn test_constants_have_expected_values() {
+        assert_eq!(MAX_SEARCH_DEPTH, 10);
+        assert_eq!(EXACT_MATCH_SCORE, 1000);
+    }
+
+    #[test]
+    fn test_max_results_zero_returns_empty() {
+        let temp_dir = setup_test_dir();
+        let mut searcher = FileSearcher::new();
+        let results = searcher.search(temp_dir.path(), "main", 0, false, false);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_search_nonexistent_directory() {
+        let mut searcher = FileSearcher::new();
+        let results = searcher.search(Path::new("/nonexistent/path"), "test", 10, false, false);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_path_query_with_deep_nesting() {
+        let temp_dir = setup_test_dir();
+        let mut searcher = FileSearcher::new();
+        // Search for nested path
+        let results = searcher.search(temp_dir.path(), "docs/api", 10, true, false);
+        assert!(results.iter().any(|r| r.display_path.contains("api")));
+    }
+
+    #[test]
+    fn test_exact_match_no_match() {
+        let temp_dir = setup_test_dir();
+        let mut searcher = FileSearcher::new();
+        let results = searcher.search(temp_dir.path(), "nonexistent.xyz", 10, false, true);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_fuzzy_search_partial_match() {
+        let temp_dir = setup_test_dir();
+        let mut searcher = FileSearcher::new();
+        // Search with partial name
+        let results = searcher.search(temp_dir.path(), "mai", 10, false, false);
+        assert!(results.iter().any(|r| r.display_path.contains("main")));
     }
 }
