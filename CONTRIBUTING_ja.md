@@ -2,6 +2,8 @@
 
 vfv への貢献に興味を持っていただきありがとうございます！
 
+> **English version**: [CONTRIBUTING.md](CONTRIBUTING.md)
+
 ## 開発環境のセットアップ
 
 ### 必要なもの
@@ -12,8 +14,8 @@ vfv への貢献に興味を持っていただきありがとうございます�
 ### ソースからビルド
 
 ```bash
-git clone https://github.com/noumi0k/vive-file-viewer.git
-cd vive-file-viewer
+git clone https://github.com/noumi0k/vfv.git
+cd vfv
 cargo build
 ```
 
@@ -66,16 +68,40 @@ Issue報告時は以下を含めてください：
 
 ### リリース手順
 
+[cargo-release](https://github.com/crate-ci/cargo-release) を使用してバージョン更新、タグ付け、CHANGELOG更新を自動化しています。
+
+```bash
+# cargo-releaseのインストール（初回のみ）
+cargo install cargo-release
+
+# ドライラン（変更内容を確認、実行しない）
+cargo release patch
+
+# リリース実行
+cargo release patch --execute   # 0.1.1 → 0.1.2
+cargo release minor --execute   # 0.1.1 → 0.2.0
+cargo release major --execute   # 0.1.1 → 1.0.0
+```
+
+これにより以下が自動実行されます：
+1. `Cargo.toml` のバージョンを更新
+2. `CHANGELOG.md` を更新（`[Unreleased]` → `[version] - date`）
+3. コミット作成: "Release {version}"
+4. タグ作成: `v{version}`
+5. リモートにpush
+
+その後、GitHub Actionsが自動的に：
+- Linux/macOS/Windows用のバイナリをビルド
+- バイナリ付きのGitHub Releaseを作成
+- crates.ioに公開
+
+### 手動リリース（cargo-releaseを使わない場合）
+
 1. `CHANGELOG.md` を新バージョンで更新
 2. `Cargo.toml` のバージョンを更新
 3. コミット: `git commit -am "Release vX.Y.Z"`
 4. タグ付け: `git tag vX.Y.Z`
-5. プッシュ: `git push && git push origin vX.Y.Z`
-
-GitHub Actionsが自動的に：
-- Linux/macOS/Windows用のバイナリをビルド
-- バイナリ付きのGitHub Releaseを作成
-- crates.ioに公開
+5. プッシュ: `git push && git push --tags`
 
 ## ライセンス
 
