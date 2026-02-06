@@ -62,6 +62,21 @@ When reporting issues, please include:
 - Steps to reproduce
 - Expected vs actual behavior
 
+## For Maintainers
+
+### Releasing
+
+1. Update `CHANGELOG.md` with the new version
+2. Update version in `Cargo.toml`
+3. Commit: `git commit -am "Release vX.Y.Z"`
+4. Tag: `git tag vX.Y.Z`
+5. Push: `git push && git push origin vX.Y.Z`
+
+GitHub Actions will automatically:
+- Build binaries for Linux/macOS/Windows
+- Create GitHub Release with binaries
+- Publish to crates.io
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
