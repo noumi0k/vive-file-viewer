@@ -1,40 +1,52 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
 ## [Unreleased]
 
+### Other
+
+- style: apply rustfmt
 ## [0.2.0] - 2026-02-06
 
-## [0.1.1] - 2025-02-06
-
 ### Added
-- Published to [crates.io](https://crates.io/crates/vfv) - now installable via `cargo install vfv`
-- `-b/--base` option in TUI search to specify search base directory
-- Automated release workflow (GitHub Releases + crates.io)
+
+- feat: add vfv init command with shell completions
 
 ### Changed
-- Package name changed from `vive-file-viewer` to `vfv` for easier installation
-- TUI search now uses the currently opened directory as the base (not the startup directory)
 
-## [0.1.0] - 2025-02-04
+- refactor: add validation and improve error handling
 
-### Added
-- Initial release
-- TUI file browser with Vim keybindings
-- Fuzzy search powered by nucleo (same as Helix editor)
-- Syntax highlighting for file preview
-- `.gitignore` aware file listing
-- CLI search command (`vfv find`) for AI/script integration
-- Jump navigation (`f` key)
-- Help screen (`?` key)
-- Path copy to clipboard (`y` key)
-- Hidden file toggle (`.` key)
-- External editor integration (`e` key)
-- Exact match option (`-e/--exact`)
-- Directory-only search (`-d/--dir`)
-- Path filtering (query containing `/`)
-- JSON output for CLI (`-j/--json`)
+### Documentation
+
+- docs: reorder README sections and update setup instructions
+
+### Fixed
+
+- fix: correct release.toml format for cargo-release
+- fix: security improvements and bug fixes
+
+### Other
+
+- chore: release 0.2.0
+- test: add search tests and CLI integration tests
+- ci: add git-cliff for automatic changelog generation
+- Update CONTRIBUTING docs and remove outdated docs/
+- Add cargo-release config and maintainer docs
+## [0.1.1] - 2026-02-06
+
+### Other
+
+- Release v0.1.1: Publish to crates.io as vfv
+- README_ja.mdにデモ動画を追加
+- Add movie to README
+- OSS公開準備の仕上げ
+- 品質改善: バイナリサイズ最適化、テスト追加、ドキュメント修正
+- OSS化のための準備
+- TUI検索の基準ディレクトリを現在開いているディレクトリに変更し、-b オプションを追加
+- Add exact match, path filtering, and TUI search options
+- Support path matching when query contains /
+- Update ratatui to 0.30 to fix lru vulnerability
+- Add CLI search command for AI/script integration
+- Add UX improvements: jump navigation, help screen, and more
+- Initial commit: vfv - Terminal file viewer
+
