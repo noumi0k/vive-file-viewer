@@ -138,3 +138,154 @@ impl FileBrowser {
         self.refresh();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use tempfile::TempDir;
+
+    fn setup_test_dir() -> TempDir {
+        let temp_dir = TempDir::new().unwrap();
+        let base = temp_dir.path();
+
+        // Create directories
+        fs::create_dir(base.join("alpha_dir")).unwrap();
+        fs::create_dir(base.join("beta_dir")).unwrap();
+        fs::create_dir(base.join(".hidden_dir")).unwrap();
+
+        // Create files
+        File::create(base.join("file_a.txt")).unwrap();
+        File::create(base.join("file_b.rs")).unwrap();
+        File::create(base.join(".hidden_file")).unwrap();
+
+        // Create nested structure
+        fs::create_dir(base.join("alpha_dir/nested")).unwrap();
+        File::create(base.join("alpha_dir/nested/deep.txt")).unwrap();
+
+        temp_dir
+    }
+
+    #[test]
+    fn test_new_browser() {
+        let temp_dir = setup_test_dir();
+        let browser = FileBrowser::new(temp_dir.path(), false);
+
+        assert!(!browser.entries.is_empty());
+        assert_eq!(browser.selected_index, 0);
+        assert!(!browser.show_hidden);
+    }
+
+    #[test]
+    fn test_directories_sorted_first() {
+        let temp_dir = setup_test_dir();
+        let browser = FileBrowser::new(temp_dir.path(), false);
+
+        // First entries should be directories
+        let dirs: Vec<_> = browser.entries.iter().take_while(|e| e.is_dir).collect();
+        assert!(!dirs.is_empty());
+
+        // After directories come files
+        let files: Vec<_> = browser.entries.iter().skip_while(|e| e.is_dir).collect();
+        assert!(files.iter().all(|e| !e.is_dir));
+    }
+
+    #[test]
+    fn test_hidden_files_filtered() {
+        let temp_dir = setup_test_dir();
+        let browser = FileBrowser::new(temp_dir.path(), false);
+
+        assert!(!browser.entries.iter().any(|e| e.name.starts_with('.')));
+    }
+
+    #[test]
+    fn test_hidden_files_shown() {
+        let temp_dir = setup_test_dir();
+        let browser = FileBrowser::new(temp_dir.path(), true);
+
+        assert!(browser.entries.iter().any(|e| e.name.starts_with('.')));
+    }
+
+    #[test]
+    fn test_move_up_down() {
+        let temp_dir = setup_test_dir();
+        let mut browser = FileBrowser::new(temp_dir.path(), false);
+
+        assert_eq!(browser.selected_index, 0);
+
+        browser.move_down();
+        assert_eq!(browser.selected_index, 1);
+
+        browser.move_up();
+        assert_eq!(browser.selected_index, 0);
+
+        // Wrap around
+        browser.move_up();
+        assert_eq!(browser.selected_index, browser.entries.len() - 1);
+
+        browser.move_down();
+        assert_eq!(browser.selected_index, 0);
+    }
+
+    #[test]
+    fn test_go_to_top_bottom() {
+        let temp_dir = setup_test_dir();
+        let mut browser = FileBrowser::new(temp_dir.path(), false);
+
+        browser.go_to_bottom();
+        assert_eq!(browser.selected_index, browser.entries.len() - 1);
+
+        browser.go_to_top();
+        assert_eq!(browser.selected_index, 0);
+    }
+
+    #[test]
+    fn test_enter_directory() {
+        let temp_dir = setup_test_dir();
+        let mut browser = FileBrowser::new(temp_dir.path(), false);
+
+        // Find alpha_dir and select it
+        let alpha_idx = browser
+            .entries
+            .iter()
+            .position(|e| e.name == "alpha_dir")
+            .unwrap();
+        browser.selected_index = alpha_idx;
+
+        let old_dir = browser.current_dir.clone();
+        assert!(browser.enter_directory());
+        assert_ne!(browser.current_dir, old_dir);
+        assert!(browser.current_dir.ends_with("alpha_dir"));
+    }
+
+    #[test]
+    fn test_go_parent() {
+        let temp_dir = setup_test_dir();
+        let mut browser = FileBrowser::new(&temp_dir.path().join("alpha_dir"), false);
+
+        let old_dir = browser.current_dir.clone();
+        assert!(browser.go_parent());
+        assert_ne!(browser.current_dir, old_dir);
+    }
+
+    #[test]
+    fn test_toggle_hidden() {
+        let temp_dir = setup_test_dir();
+        let mut browser = FileBrowser::new(temp_dir.path(), false);
+
+        let count_without_hidden = browser.entries.len();
+        browser.toggle_hidden();
+        let count_with_hidden = browser.entries.len();
+
+        assert!(count_with_hidden > count_without_hidden);
+    }
+
+    #[test]
+    fn test_selected_entry() {
+        let temp_dir = setup_test_dir();
+        let browser = FileBrowser::new(temp_dir.path(), false);
+
+        let entry = browser.selected_entry();
+        assert!(entry.is_some());
+    }
+}

@@ -10,7 +10,7 @@ AIとペアプロしてる最中に、ちょっとファイルを確認したい
 ## なぜ vfv？
 
 - **設定不要のファジー検索** - [nucleo](https://github.com/helix-editor/nucleo)（Helixエディタと同じ）内蔵。fzfの設定不要。
-- **4MBの単一バイナリ** - インストールして即実行。
+- **3MBの単一バイナリ** - インストールして即実行。
 - **Vimキーバインド** - 慣れた操作感。
 - **シンタックスハイライト** - コードをカラーでプレビュー。
 - **.gitignore対応** - ripgrepのignoreクレート使用。
@@ -23,7 +23,7 @@ AIとペアプロしてる最中に、ちょっとファイルを確認したい
 
 ```bash
 # ソースから
-git clone https://github.com/yourname/vive-file-viewer.git
+git clone https://github.com/noumi0k/vive-file-viewer.git
 cd vive-file-viewer
 cargo install --path .
 
@@ -139,10 +139,11 @@ vfv find "main" ~/dev -q -j -c -t 5
 `/`で検索を開始。CLIと同じオプションが使えます：
 
 ```
-main.rs        # ファジー検索
-config -e      # 完全一致
-src/main -d    # ディレクトリのみ、パスマッチ
-telemo -d -e   # ディレクトリのみ＋完全一致
+main.rs           # ファジー検索
+config -e         # 完全一致
+src/main -d       # ディレクトリのみ、パスマッチ
+telemo -d -e      # ディレクトリのみ＋完全一致
+main -b ~/dev     # 指定ディレクトリを起点に検索
 ```
 
 | キー | 動作 |

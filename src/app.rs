@@ -526,3 +526,120 @@ impl App {
         self.input_mode = InputMode::Normal;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn create_test_app() -> (App, TempDir) {
+        let temp_dir = TempDir::new().unwrap();
+        let config = Config::default();
+        let app = App::new(temp_dir.path(), config);
+        (app, temp_dir)
+    }
+
+    #[test]
+    fn test_parse_search_input_simple() {
+        let (mut app, _temp) = create_test_app();
+        app.search_input = "main.rs".to_string();
+
+        let (query, dirs_only, exact, base_path) = app.parse_search_input();
+        assert_eq!(query, "main.rs");
+        assert!(!dirs_only);
+        assert!(!exact);
+        assert!(base_path.is_none());
+    }
+
+    #[test]
+    fn test_parse_search_input_with_options() {
+        let (mut app, _temp) = create_test_app();
+        app.search_input = "config -e -d".to_string();
+
+        let (query, dirs_only, exact, _) = app.parse_search_input();
+        assert_eq!(query, "config");
+        assert!(dirs_only);
+        assert!(exact);
+    }
+
+    #[test]
+    fn test_parse_search_input_with_base_path() {
+        let (mut app, _temp) = create_test_app();
+        app.search_input = "main -b /tmp".to_string();
+
+        let (query, _, _, base_path) = app.parse_search_input();
+        assert_eq!(query, "main");
+        assert_eq!(base_path, Some(PathBuf::from("/tmp")));
+    }
+
+    #[test]
+    fn test_parse_search_input_with_home_expansion() {
+        let (mut app, _temp) = create_test_app();
+        app.search_input = "main -b ~/dev".to_string();
+
+        let (query, _, _, base_path) = app.parse_search_input();
+        assert_eq!(query, "main");
+        assert!(base_path.is_some());
+        let path = base_path.unwrap();
+        assert!(path.to_string_lossy().contains("dev"));
+        assert!(!path.to_string_lossy().starts_with("~"));
+    }
+
+    #[test]
+    fn test_input_mode_transitions() {
+        let (mut app, _temp) = create_test_app();
+
+        assert_eq!(app.input_mode, InputMode::Normal);
+
+        app.start_search();
+        assert_eq!(app.input_mode, InputMode::SearchInput);
+
+        app.cancel_search();
+        assert_eq!(app.input_mode, InputMode::Normal);
+
+        app.show_help();
+        assert_eq!(app.input_mode, InputMode::Help);
+
+        app.close_help();
+        assert_eq!(app.input_mode, InputMode::Normal);
+    }
+
+    #[test]
+    fn test_search_input_manipulation() {
+        let (mut app, _temp) = create_test_app();
+
+        app.search_input_char('h');
+        app.search_input_char('e');
+        app.search_input_char('l');
+        app.search_input_char('l');
+        app.search_input_char('o');
+
+        assert_eq!(app.search_input, "hello");
+
+        app.search_input_backspace();
+        assert_eq!(app.search_input, "hell");
+    }
+
+    #[test]
+    fn test_preview_scroll_up() {
+        let (mut app, _temp) = create_test_app();
+
+        // Set initial scroll position
+        app.preview_scroll = 10;
+
+        app.scroll_preview_up(3);
+        assert_eq!(app.preview_scroll, 7);
+
+        app.scroll_preview_up(10);
+        assert_eq!(app.preview_scroll, 0); // saturating_sub prevents negative
+    }
+
+    #[test]
+    fn test_quit() {
+        let (mut app, _temp) = create_test_app();
+
+        assert!(!app.should_quit);
+        app.quit();
+        assert!(app.should_quit);
+    }
+}

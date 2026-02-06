@@ -177,13 +177,12 @@ fn draw_search_results(frame: &mut Frame, app: &mut App, area: Rect) {
         .search_results
         .iter()
         .map(|result| {
-            let name = format!(" {}", result.display_path);
-
-            let style = if result.is_dir {
-                Style::default().fg(Color::Yellow)
+            let (icon, style) = if result.is_dir {
+                ("▸ ", Style::default().fg(Color::Yellow))
             } else {
-                Style::default().fg(Color::White)
+                ("  ", Style::default().fg(Color::White))
             };
+            let name = format!("{}{}", icon, result.display_path);
 
             ListItem::new(name).style(style)
         })
@@ -224,13 +223,12 @@ fn draw_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
         .entries
         .iter()
         .map(|entry| {
-            let name = format!(" {}", entry.name);
-
-            let style = if entry.is_dir {
-                Style::default().fg(Color::Yellow)
+            let (icon, style) = if entry.is_dir {
+                ("▸ ", Style::default().fg(Color::Yellow))
             } else {
-                Style::default().fg(Color::White)
+                ("  ", Style::default().fg(Color::White))
             };
+            let name = format!("{}{}", icon, entry.name);
 
             ListItem::new(name).style(style)
         })

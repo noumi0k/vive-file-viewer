@@ -12,7 +12,7 @@ When you're in the flow with AI pair programming, you just want to quickly brows
 ## Why vfv?
 
 - **Zero config fuzzy search** - Built-in [nucleo](https://github.com/helix-editor/nucleo) (same as Helix editor). No fzf setup needed.
-- **4MB single binary** - Install and run. That's it.
+- **3MB single binary** - Install and run. That's it.
 - **Vim keybindings** - Navigate like you're used to.
 - **Syntax highlighting** - Preview code with colors.
 - **.gitignore aware** - Powered by ripgrep's ignore crate.
@@ -141,10 +141,11 @@ Press `?` to show help screen.
 Press `/` to open search. You can use options like CLI:
 
 ```
-main.rs        # Fuzzy search
-config -e      # Exact match
-src/main -d    # Directories only, path matching
-telemo -d -e   # Directories only + exact match
+main.rs           # Fuzzy search
+config -e         # Exact match
+src/main -d       # Directories only, path matching
+telemo -d -e      # Directories only + exact match
+main -b ~/dev     # Search from specific base directory
 ```
 
 | Key | Action |
