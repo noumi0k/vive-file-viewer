@@ -3,84 +3,76 @@
 ## Quick Start
 
 ```bash
-# Build the project
-cargo build --release
-
-# Run from project directory
-cargo run -- /path/to/browse
-
-# Or install and run anywhere
+# Install
 cargo install --path .
-vive-file-viewer ~/dev
+
+# Browse current directory
+vfv
+
+# Browse specific directory
+vfv ~/dev
 ```
 
-## Navigation
+## TUI Navigation
 
-### Moving Around
+### File Browser
 
-- Use `j`/`k` or arrow keys to move up/down in the file list
-- Press `Enter` or `l` to enter a directory or preview a file
-- Press `Backspace` or `h` to go back to parent directory
-- Press `g` to jump to the first item
-- Press `G` to jump to the last item
+- `j`/`k` or arrow keys - Move up/down
+- `Enter` or `l` - Enter directory / Preview file
+- `h` or `Backspace` - Go to parent directory
+- `g`/`G` - Jump to first/last item
+- `f` + char - Jump to entry starting with char
+- `;`/`,` - Next/previous jump match
 
 ### File Preview
 
-The right pane shows a preview of the selected file with:
+The right pane shows the selected file with:
 - Line numbers
-- Syntax highlighting (auto-detected by file extension)
-- Use `PageUp`/`PageDown` to scroll the preview
+- Syntax highlighting (auto-detected)
+- Scroll: `j`/`k`, `Ctrl+d`/`Ctrl+u`, `PageUp`/`PageDown`
 
-### Search/Filter
+### Search
 
 1. Press `/` to enter search mode
-2. Type your search query (filters file list in real-time)
-3. Press `Enter` to confirm or `Esc` to cancel
+2. Type query with options: `main -d -e -b ~/dev`
+3. Press `Enter` to execute
 
-### External Editor
+Options:
+- `-d` - Directories only
+- `-e` - Exact match
+- `-b <path>` - Search base directory
 
-Press `e` to open the selected file in your configured editor.
+## CLI Search
+
+```bash
+# Fuzzy search
+vfv find "config" ~/dev
+
+# Find directory and cd
+cd $(vfv find "project" ~/dev -d -1 -q)
+
+# AI-friendly output
+vfv find "main" ~/dev -q -j -c -t 5
+```
 
 ## Configuration
 
-### Config File Location
-
+Config location:
 - macOS: `~/Library/Application Support/vive-file-viewer/config.toml`
 - Linux: `~/.config/vive-file-viewer/config.toml`
 
-### Editor Configuration
-
 ```toml
-# VSCode
-editor = "code"
-
-# Cursor
-editor = "cursor"
-
-# Vim
 editor = "vim"
 editor_args = []
-
-# Neovim
-editor = "nvim"
+show_hidden = false
+preview_max_lines = 1000
+theme = "base16-ocean.dark"
 ```
 
-### Display Options
+### Available Themes
 
-```toml
-# Show hidden files by default
-show_hidden = true
-
-# Maximum preview lines (for large files)
-preview_max_lines = 2000
-```
-
-### Themes
-
-Available syntax highlighting themes:
 - `base16-ocean.dark` (default)
 - `base16-eighties.dark`
 - `base16-mocha.dark`
-- `InspiredGitHub`
 - `Solarized (dark)`
 - `Solarized (light)`

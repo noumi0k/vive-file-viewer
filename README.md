@@ -6,6 +6,7 @@
 
 When you're in the flow with AI pair programming, you just want to quickly browse and check files—no complex setup, no heavy features. Just open, search, view, and get back to coding.
 
+[![CI](https://github.com/noumi0k/vive-file-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/noumi0k/vive-file-viewer/actions/workflows/ci.yml)
 ![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
